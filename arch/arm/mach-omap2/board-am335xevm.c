@@ -170,13 +170,26 @@ static struct lcd_ctrl_config lcd_cfg = {
 #endif
 
 #if 1
-// 支持南京鱼跃 10寸液晶和我们的拓普微的液晶
 static const struct display_panel disp_panel = {
-	QVGA,
+	WVGA,
 	16,
 	16,
 	COLOR_ACTIVE,
+	//MONOCHROME,
 };
+#endif
+
+#if 0
+// 支持南京鱼跃 10寸液晶和我们的拓普微的液晶
+static const struct display_panel disp_panel = {
+	WVGA,
+	32,
+	16,
+	COLOR_ACTIVE,
+};
+#endif
+
+#if 1
 static struct lcd_ctrl_config lcd_cfg = {
 	&disp_panel,
 	.ac_bias		= 255,
