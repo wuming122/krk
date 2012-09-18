@@ -645,11 +645,11 @@ static struct pinmux_config i2c1_pin_mux[] = {
 	{NULL, 0},
 };
 
-static struct pinmux_config i2c2_pin_mux[] = {
-	{"uart1_ctsn.i2c2_sda",    OMAP_MUX_MODE3 | AM33XX_SLEWCTRL_SLOW |
-					AM33XX_PULL_UP | AM33XX_INPUT_EN},
-	{"uart1_rtsn.i2c2_scl",   OMAP_MUX_MODE3 | AM33XX_SLEWCTRL_SLOW |
-					AM33XX_PULL_UP | AM33XX_INPUT_EN},
+static struct pinmux_config i2c0_pin_mux[] = {
+	{"i2c0_sda.i2c0_sda",    OMAP_MUX_MODE0 | AM33XX_SLEWCTRL_SLOW |
+					AM33XX_PULL_ENBL | AM33XX_INPUT_EN},
+	{"i2c0_scl.i2c0_scl",   OMAP_MUX_MODE0 | AM33XX_SLEWCTRL_SLOW |
+					AM33XX_PULL_ENBL | AM33XX_INPUT_EN},
 	{NULL, 0},
 };
 
@@ -696,7 +696,7 @@ static struct pinmux_config mmc0_no_cd_pin_mux[] = {
 	{"mmc0_clk.mmc0_clk",	OMAP_MUX_MODE0 | AM33XX_PIN_INPUT_PULLUP},
 	{"mmc0_cmd.mmc0_cmd",	OMAP_MUX_MODE0 | AM33XX_PIN_INPUT_PULLUP},
 	{"mcasp0_aclkr.mmc0_sdwp", OMAP_MUX_MODE4 | AM33XX_PIN_INPUT_PULLDOWN},
-	{"xdma_event_intr1.gpio0_20", OMAP_MUX_MODE7 | AM33XX_PIN_INPUT_PULLUP},
+	//{"xdma_event_intr1.gpio0_20", OMAP_MUX_MODE7 | AM33XX_PIN_INPUT_PULLUP},
 	//{"xdma_event_intr1.gpio0_20", OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
 	{NULL, 0},
 };
@@ -1021,12 +1021,12 @@ static struct pinmux_config wl12xx_pin_mux_evm_rev1_0[] = {
 static void enable_ecap0(int evm_id, int profile)
 {
 	backlight_enable = true;
-	setup_pin_mux(ecap0_pin_mux);
+	//setup_pin_mux(ecap0_pin_mux);
 }
 
 static void enable_ecap(int evm_id, int profile)
 {
-	setup_pin_mux(ecap_pin_mux);
+	//setup_pin_mux(ecap_pin_mux);
 }
 
 /* Setup pwm-backlight */
@@ -1093,29 +1093,24 @@ out:
 	return ret;
 }
 
-/* Module pin mux for hxzd_gpio */
-static struct pinmux_config hxzd_gpio_pin_mux[] = {
-	{"gpmc_a0.gpio1_16",  OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
-	{"gpmc_a1.gpio1_17",  OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
-	{"gpmc_a2.gpio1_18",  OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
-	{"gpmc_a3.gpio1_19", OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
-	{"gpmc_a4.gpio1_20", OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
-	{"gpmc_a5.gpio1_21",  OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
-	{"gpmc_a6.gpio1_22",  OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
-	{"gpmc_a7.gpio1_23",  OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
-	{"gpmc_a8.gpio1_24", OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
-	{"gpmc_a9.gpio1_25", OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
-	{"gpmc_a10.gpio1_26", OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
-	{"gpmc_a11.gpio1_27", OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
-	{"spi0_d1.gpio0_4", OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
-	{"spi0_cs0.gpio0_5", OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
+/* Module pin mux for krk_gpio */
+static struct pinmux_config krk_gpio_pin_mux[] = {
+	{"gpmc_a0.gpio1_16",  OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
+	{"gpmc_a1.gpio1_17",  OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
+	{"gpmc_a2.gpio1_18",  OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
+	{"gpmc_a3.gpio1_19", OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
+	{"gpmc_a4.gpio1_20", OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
+	{"gpmc_a5.gpio1_21",  OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
+	{"gpmc_a6.gpio1_22",  OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
+	{"gpmc_a7.gpio1_23",  OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
+	{"gpmc_a8.gpio1_24", OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
 	{NULL, 0},
 };
 
-static void hxzd_gpio_init(int evm_id, int profile)
+static void krk_gpio_init(int evm_id, int profile)
 {
 	lsd_dbg(LSD_DBG,"Enter board init:%s\n",__FUNCTION__);
-	setup_pin_mux(hxzd_gpio_pin_mux);
+	setup_pin_mux(krk_gpio_pin_mux);
 	return;
 }
 
@@ -1671,13 +1666,23 @@ static void i2c1_init(int evm_id, int profile)
 
 static struct i2c_board_info am335x_i2c_boardinfo2[] = {
 };
-
+#if 0
 static void i2c2_init(int evm_id, int profile)
 {
 	lsd_dbg(LSD_DBG,"Enter board init:%s\n",__FUNCTION__);
 	setup_pin_mux(i2c2_pin_mux);
 	omap_register_i2c_bus(3, 100, am335x_i2c_boardinfo2,
 			ARRAY_SIZE(am335x_i2c_boardinfo2));
+	return;
+}
+#endif
+
+static void i2c0_init(int evm_id, int profile)
+{
+	setup_pin_mux(i2c0_pin_mux);
+	omap_register_i2c_bus(1, 100, am335x_i2c_boardinfo1,
+			ARRAY_SIZE(am335x_i2c_boardinfo1));
+	lsd_dbg(LSD_DBG,"Enter board init:%s\n",__FUNCTION__);
 	return;
 }
 
@@ -2033,7 +2038,7 @@ static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
 	{uart3_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{uart4_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{uart5_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
-	{hxzd_gpio_init,DEV_ON_BASEBOARD, PROFILE_NONE},
+	{krk_gpio_init,DEV_ON_BASEBOARD, PROFILE_NONE},
 	{NULL, 0, 0},
 };
 
@@ -2073,7 +2078,7 @@ static struct evm_dev_cfg beaglebone_old_dev_cfg[] = {
 	{usb0_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{usb1_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{mmc0_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
-	{i2c2_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
+	//{i2c2_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{NULL, 0, 0},
 };
 
@@ -2102,8 +2107,8 @@ static struct evm_dev_cfg beaglebone_dev_cfg[] = {
 	{uart3_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{uart4_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{uart5_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
-	{hxzd_gpio_init,DEV_ON_BASEBOARD, PROFILE_NONE},
-	{enable_ecap,DEV_ON_BASEBOARD, PROFILE_NONE},
+	{krk_gpio_init,DEV_ON_BASEBOARD, PROFILE_NONE},
+//	{enable_ecap,DEV_ON_BASEBOARD, PROFILE_NONE},
 	{NULL, 0, 0},
 };
 
@@ -2509,10 +2514,10 @@ static void __init am335x_evm_i2c_init(void)
 
 	//evm_init_cpld();
 
-	//omap_register_i2c_bus(1, 100, am335x_i2c_boardinfo,
-	//			ARRAY_SIZE(am335x_i2c_boardinfo));
-	omap_register_i2c_bus(3, 100, am335x_i2c_boardinfo,
+	omap_register_i2c_bus(1, 100, am335x_i2c_boardinfo,
 				ARRAY_SIZE(am335x_i2c_boardinfo));
+	//omap_register_i2c_bus(3, 100, am335x_i2c_boardinfo,
+	//			ARRAY_SIZE(am335x_i2c_boardinfo));
 }
 
 static struct resource am335x_rtc_resources[] = {
