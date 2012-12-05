@@ -147,7 +147,7 @@ static int __devinit rotary_encoder_probe(struct platform_device *pdev)
 	struct input_dev *input;
 	irq_handler_t handler;
 	int err;
-
+	printk(" AAA Lierda Eter in <%s,%s,%d>.\n",__FUNCTION__,__FILE__,__LINE__);    //wuming 20120627
 	if (!pdata) {
 		dev_err(&pdev->dev, "missing platform data\n");
 		return -ENOENT;
@@ -189,7 +189,7 @@ static int __devinit rotary_encoder_probe(struct platform_device *pdev)
 	/* request the GPIOs */
 	err = gpio_request(pdata->gpio_a, DRV_NAME);
 	if (err) {
-		dev_err(&pdev->dev, "unable to request GPIO %d\n",
+		dev_err(&pdev->dev, "unable to request GPIOa %d\n",
 			pdata->gpio_a);
 		goto exit_unregister_input;
 	}
@@ -203,7 +203,7 @@ static int __devinit rotary_encoder_probe(struct platform_device *pdev)
 
 	err = gpio_request(pdata->gpio_b, DRV_NAME);
 	if (err) {
-		dev_err(&pdev->dev, "unable to request GPIO %d\n",
+		dev_err(&pdev->dev, "unable to request GPIOb %d\n",
 			pdata->gpio_b);
 		goto exit_free_gpio_a;
 	}
@@ -287,6 +287,7 @@ static struct platform_driver rotary_encoder_driver = {
 
 static int __init rotary_encoder_init(void)
 {
+	printk(" AAA Lierda Eter in <%s,%s,%d>.\n",__FUNCTION__,__FILE__,__LINE__);    //wuming 20120627
 	return platform_driver_register(&rotary_encoder_driver);
 }
 

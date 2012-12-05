@@ -22,6 +22,8 @@
 #include <asm/atomic.h> 
 #include <asm/unistd.h> 
 
+#include <plat/irqs.h>
+
 #include <linux/version.h>
 #include <linux/irq.h>
 #include <linux/interrupt.h>
@@ -29,10 +31,28 @@
 #include <asm/gpio.h>
 #include <linux/lierda_debug.h>
 
+#include "dmtimer.h"
 #define DEVICE_NAME "gpio" //设备名(/dev/led) 
 
 #define MOTOR_MAGIC 'L'
 #define SET_LED _IOW(MOTOR_MAGIC, 0,int)
+
+
+#define TIMER_INITIAL_COUNT             (0xFFF00000u)
+#define TIMER_RLD_COUNT                 (0xFF000000u)
+#define TIMER_FINAL_COUNT               (0x0FFFFu)
+
+
+#define SOC_DMTIMER_0_REGS                   (0x44E05000)
+#define SOC_DMTIMER_1_REGS                   (0x44E31000)
+#define SOC_DMTIMER_2_REGS                   (0x48040000)
+#define SOC_DMTIMER_3_REGS                   (0x48042000)
+#define SOC_DMTIMER_4_REGS                   (0x48044000)
+#define SOC_DMTIMER_5_REGS                   (0x48046000)
+#define SOC_DMTIMER_6_REGS                   (0x48048000)
+#define SOC_DMTIMER_7_REGS                   (0x4804A000)
+void __iomem *DMTIMER2_BASE; 
+
 
 
 static int gpio_num[14] = {
@@ -109,6 +129,12 @@ static struct miscdevice misc = {
   .fops = &dev_fops, 
 }; 
  
+
+static irqreturn_t rotator_interrupt(int irq, void *dev_id)
+{
+printk(" AAA Lierda Eter in <%s,%s,%d>.\n",__FUNCTION__,__FILE__,__LINE__);    //wuming 20120627
+    return IRQ_RETVAL(IRQ_HANDLED);
+}
  
 // 设备初始化 
 static int __init dev_init(void) 
@@ -116,6 +142,9 @@ static int __init dev_init(void)
     int ret; 
     int i;  
     int status;
+  int err = 0;
+   unsigned long value=0;
+printk(" AAA Lierda Eter in <%s,%s,%d>.\n",__FUNCTION__,__FILE__,__LINE__);    //wuming 20120627
    for(i = 0; i < 14 ; i++)
    {
 	   status = gpio_request(gpio_num[i], "gpio_test\n");
@@ -128,9 +157,128 @@ static int __init dev_init(void)
 		lsd_dbg(LSD_OK,"open GPIO %d ok\n", gpio_num[i]);	
 	   }
 	   gpio_direction_output(gpio_num[i],0); 
-   }    
+ 
+   }
+
+   ret = misc_register(&misc); //注册设备     
+DMTIMER2_BASE = ((volatile unsigned long)ioremap(SOC_DMTIMER_1_REGS,0x60));
      
-   ret = misc_register(&misc); //注册设备 
+// DMTimerCounterSet(SOC_DMTIMER_2_REGS, TIMER_INITIAL_COUNT);
+__raw_writel(TIMER_INITIAL_COUNT, DMTIMER2_BASE+DMTIMER_TCRR);
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_TCRR);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+    /* Load the load register with the reload count value */
+  //  DMTimerReloadSet(SOC_DMTIMER_2_REGS, TIMER_RLD_COUNT);
+__raw_writel(TIMER_RLD_COUNT, DMTIMER2_BASE+DMTIMER_TLDR);
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_TLDR);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+    /* Configure the DMTimer for Auto-reload and compare mode */
+   // DMTimerModeConfigure(SOC_DMTIMER_2_REGS, DMTIMER_AUTORLD_NOCMP_ENABLE);
+__raw_writel(DMTIMER_AUTORLD_NOCMP_ENABLE+DMTIMER_TCLR_ST, DMTIMER2_BASE+DMTIMER_TCLR);
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_TCLR);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+ err = request_irq(67, rotator_interrupt, IRQ_TYPE_EDGE_BOTH, DEVICE_NAME, NULL);
+printk(" AAA Lierda Eter in <%s,%s,%d>.\n",__FUNCTION__,__FILE__,__LINE__);    //wuming 20120627
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_TCRR);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+	if (err)
+    {
+		disable_irq(INT_TIMER2);
+		free_irq(INT_TIMER2, NULL);
+        return -EBUSY;
+    }
+//__raw_writel(DMTIMER_TCLR_ST+DMTIMER_AUTORLD_NOCMP_ENABLE, DMTIMER2_BASE+DMTIMER_TCLR);
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_TCLR);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_TCRR);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_TCRR);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+
+
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_IRQENABLE_SET);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+
+
+__raw_writel(DMTIMER_INT_OVF_EN_FLAG+DMTIMER_INT_MAT_IT_FLAG, DMTIMER2_BASE+DMTIMER_IRQENABLE_SET);
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_IRQENABLE_SET);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+
+//__raw_writel(DMTIMER_TCLR_ST+DMTIMER_AUTORLD_NOCMP_ENABLE, DMTIMER2_BASE+DMTIMER_TCLR);
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_TCLR);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+
+
+
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_IRQSTATUS);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_IRQSTATUS);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_IRQSTATUS);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_IRQSTATUS);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_IRQSTATUS);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_IRQSTATUS);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_TCRR);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_TCRR);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+for(i=0;i<5000;i++)
+{
+	;
+}
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_TCRR);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_TCRR);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_TCRR);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_TCRR);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+for(i=0;i<5000;i++)
+{
+	;
+}
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_TCRR);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_TCRR);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_TCRR);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_TCRR);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+for(i=0;i<5000;i++)
+{
+	;
+}
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_TCRR);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_TCRR);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+
+
+
+
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_IRQSTATUS);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_IRQSTATUS);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_IRQSTATUS);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+value=__raw_readl(DMTIMER2_BASE+DMTIMER_IRQSTATUS);
+printk(" AAA Lierda Eter in <%s,%s,%d>value=%x.\n",__FUNCTION__,__FILE__,__LINE__,value);    //wuming 20120627
+
    printk (DEVICE_NAME"\tinitialized\n"); //打印初始化信息 
    return ret; 
 } 
@@ -145,6 +293,10 @@ static void __exit dev_exit(void)
    
    	misc_deregister(&misc); 
 } 
+
+
+
+
  
 // 模块初始化，仅当使用 insmod/podprobe 命令加载时有用，
 // 如果设备不是通过模块方式加载，此处将不会被调用 

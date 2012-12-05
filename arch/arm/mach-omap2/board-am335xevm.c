@@ -66,6 +66,9 @@
 #include "devices.h"
 #include "hsmmc.h"
 
+
+#include <linux/rotary_encoder.h>
+
 /* Convert GPIO signal to GPIO pin number */
 #define GPIO_TO_PIN(bank, gpio) (32 * (bank) + (gpio))
 
@@ -273,8 +276,8 @@ static struct omap2_hsmmc_info am335x_mmc[] __initdata = {
 		.mmc            = 1,
 		.caps           = MMC_CAP_4_BIT_DATA,
 		// nmy modify
-		//.gpio_cd        = GPIO_TO_PIN(0, 6),
-		.gpio_cd        = GPIO_TO_PIN(0, 20),
+		.gpio_cd        = GPIO_TO_PIN(0, 6),
+		//.gpio_cd        = GPIO_TO_PIN(0, 20),
 		.gpio_wp        = GPIO_TO_PIN(3, 18),
 		.ocr_mask       = MMC_VDD_32_33 | MMC_VDD_33_34, /* 3V3 */
 	},
@@ -684,7 +687,11 @@ static struct pinmux_config mmc0_pin_mux[] = {
 	{"mmc0_clk.mmc0_clk",	OMAP_MUX_MODE0 | AM33XX_PIN_INPUT_PULLUP},
 	{"mmc0_cmd.mmc0_cmd",	OMAP_MUX_MODE0 | AM33XX_PIN_INPUT_PULLUP},
 	{"mcasp0_aclkr.mmc0_sdwp", OMAP_MUX_MODE7 | AM33XX_PIN_INPUT_PULLUP},
-	{"spi0_cs1.mmc0_sdcd",  OMAP_MUX_MODE7 | AM33XX_PIN_INPUT_PULLUP},
+	//{"spi0_cs1.mmc0_sdcd",  OMAP_MUX_MODE7 | AM33XX_PIN_INPUT_PULLUP},
+	{"spi0_cs1.gpio0_6",  OMAP_MUX_MODE7 | AM33XX_PIN_INPUT_PULLUP},
+	//{"gpmc_a4.gpio1_20", OMAP_MUX_MODE7 | AM33XX_PIN_INPUT_PULLUP},
+	
+
 	{NULL, 0},
 };
 
@@ -696,7 +703,8 @@ static struct pinmux_config mmc0_no_cd_pin_mux[] = {
 	{"mmc0_clk.mmc0_clk",	OMAP_MUX_MODE0 | AM33XX_PIN_INPUT_PULLUP},
 	{"mmc0_cmd.mmc0_cmd",	OMAP_MUX_MODE0 | AM33XX_PIN_INPUT_PULLUP},
 	{"mcasp0_aclkr.mmc0_sdwp", OMAP_MUX_MODE4 | AM33XX_PIN_INPUT_PULLDOWN},
-	//{"xdma_event_intr1.gpio0_20", OMAP_MUX_MODE7 | AM33XX_PIN_INPUT_PULLUP},
+	{"xdma_event_intr1.gpio0_20", OMAP_MUX_MODE7 | AM33XX_PIN_INPUT_PULLUP},
+	//{"spi0_cs1.mmc0_sdcd", OMAP_MUX_MODE5 | AM33XX_PIN_INPUT_PULLUP},
 	//{"xdma_event_intr1.gpio0_20", OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
 	{NULL, 0},
 };
@@ -856,6 +864,79 @@ static struct pinmux_config volume_keys_pin_mux[] = {
 	{"spi0_d0.gpio0_3",    OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
 	{NULL, 0},
 };
+//wuming 210120925
+#if 1
+
+static struct rotary_encoder_platform_data am335x_rotary_encoder_gpio_info = {
+	.steps 				= 1,
+	.axis				= 1,
+	.gpio_a				= GPIO_TO_PIN(1, 23),
+	//.gpio_b				= GPIO_TO_PIN(1, 19),
+
+};
+
+static struct platform_device am335x_rotary_encoder_gpio = {
+	.name   = "rotary-encoder",
+	.id     = -1,
+	.dev    = {
+		.platform_data  = &am335x_rotary_encoder_gpio_info,
+	},
+};
+
+static void rotary_encoder_init(int evm_id, int profile)
+{
+	int err;
+
+	//setup_pin_mux(rotary-encoder_pin_mux);
+	err = platform_device_register(&am335x_rotary_encoder_gpio);
+	if (err)
+		pr_err("failed to register rotary_encoder device\n");
+}
+
+
+#endif
+
+
+//wuming 210120925
+#if 1
+
+static struct pinmux_config jtag_pin_mux[] = {
+	{"emu0.gpio3_7",  OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
+	{"emu1.gpio3_8",    OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
+	{NULL, 0},
+};
+/*
+static struct pinmux_config jtag_pin_mux[] = {
+	{"gpmc_a5.gpio1_21",  OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
+	{"gpmc_a6.gpio1_22",    OMAP_MUX_MODE7 | AM33XX_PIN_OUTPUT},
+	{NULL, 0},
+};*/
+
+
+static void jtag_pin_init(int evm_id, int profile)
+{
+	int err;
+printk(" AAA Lierda Eter in <%s,%s,%d>.\n",__FUNCTION__,__FILE__,__LINE__);    //wuming 20120627
+	setup_pin_mux(jtag_pin_mux);
+printk(" AAA Lierda Eter in <%s,%s,%d>.\n",__FUNCTION__,__FILE__,__LINE__);    //wuming 20120627
+	
+
+printk(" AAA Lierda Eter in <%s,%s,%d>.\n",__FUNCTION__,__FILE__,__LINE__);    //wuming 20120627
+	/*gpio_direction_output(53,1);
+gpio_direction_output(54,0);*/
+/*
+while(1)
+{
+printk(" AAA Lierda Eter in <%s,%s,%d>.\n",__FUNCTION__,__FILE__,__LINE__);    //wuming 20120627
+gpio_set_value(103,0);
+	gpio_set_value(104,1);
+
+}*/
+}
+
+
+#endif
+
 
 /* Configure GPIOs for Volume Keys */
 static struct gpio_keys_button am335x_evm_volume_gpio_buttons[] = {
@@ -1099,11 +1180,13 @@ static struct pinmux_config krk_gpio_pin_mux[] = {
 	{"gpmc_a1.gpio1_17",  OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
 	{"gpmc_a2.gpio1_18",  OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
 	{"gpmc_a3.gpio1_19", OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
-	{"gpmc_a4.gpio1_20", OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
+//	{"gpmc_a4.gpio1_20", OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
 	{"gpmc_a5.gpio1_21",  OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
 	{"gpmc_a6.gpio1_22",  OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
 	{"gpmc_a7.gpio1_23",  OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
 	{"gpmc_a8.gpio1_24", OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
+	{"gpmc_csn1.gpio1_30", OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
+	{"gpmc_csn2.gpio1_31", OMAP_MUX_MODE7 | AM33XX_PIN_INPUT},
 	{NULL, 0},
 };
 
@@ -1248,7 +1331,7 @@ static void haptics_init(int evm_id, int profile)
 	am33xx_register_ehrpwm(2, &pwm_pdata[2]);
 }
 
-#if 1
+#if 0
 /* NAND partition information */
 static struct mtd_partition am335x_nand_partitions[] = {
 /* All the partition sizes are listed in terms of NAND block size */
@@ -1296,6 +1379,68 @@ static struct mtd_partition am335x_nand_partitions[] = {
 };
 #endif
 
+#if 1
+/* NAND partition information */
+static struct mtd_partition am335x_nand_partitions[] = {
+/* All the partition sizes are listed in terms of NAND block size */
+	{
+		.name           = "SPL",
+		.offset         = 0,			/* Offset = 0x0 */
+		.size           = SZ_128K,
+	},
+	{
+		.name           = "SPL.backup1",
+		.offset         = MTDPART_OFS_APPEND,	/* Offset = 0x20000 */
+		.size           = SZ_128K,
+	},
+	{
+		.name           = "SPL.backup2",
+		.offset         = MTDPART_OFS_APPEND,	/* Offset = 0x40000 */
+		.size           = SZ_128K,
+	},
+	{
+		.name           = "SPL.backup3",
+		.offset         = MTDPART_OFS_APPEND,	/* Offset = 0x60000 */
+		.size           = SZ_128K,
+	},
+	{
+		.name           = "U-Boot",
+		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x80000 */
+		.size           = 15 * SZ_128K,
+	},
+	{
+		.name           = "U-Boot Env",
+		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x260000 */
+		.size           = 1 * SZ_128K,
+	},
+	{
+		.name           = "Kernel",
+		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x280000 */
+		.size           = 40 * SZ_128K,
+	},
+	{
+		//.name           = "File System",
+		.name           = "rootfs",
+		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x780000 */
+		.size           = 30 * SZ_1M,
+	},
+	{
+		//.name           = "File System",
+		.name           = "program1",
+		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x2580000 */
+		.size           = 30 * SZ_1M,
+	},
+	{
+		//.name           = "File System",
+		.name           = "program2",
+		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0x4380000 */
+		.size           = MTDPART_SIZ_FULL,
+	},
+
+};
+#endif
+
+
 #if 0
 /* NAND partition information */
 static struct mtd_partition am335x_nand_partitions[] = {
@@ -1313,8 +1458,13 @@ static struct mtd_partition am335x_nand_partitions[] = {
 	{
 		.name           = "rootfs",
 		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0xB20000 */
+		.size           = 78 * SZ_128K,
+	},
+	{
+		.name           = "program",
+		.offset         = MTDPART_OFS_APPEND,   /* Offset = 0xB20000 */
 		.size           = MTDPART_SIZ_FULL,
-	}
+	},
 };
 #endif
 
@@ -2038,7 +2188,9 @@ static struct evm_dev_cfg gen_purp_evm_dev_cfg[] = {
 	{uart3_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{uart4_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{uart5_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
-	{krk_gpio_init,DEV_ON_BASEBOARD, PROFILE_NONE},
+	//{krk_gpio_init,DEV_ON_BASEBOARD, PROFILE_NONE},
+	{jtag_pin_init,DEV_ON_BASEBOARD, PROFILE_NONE},
+	
 	{NULL, 0, 0},
 };
 
@@ -2093,8 +2245,8 @@ static struct evm_dev_cfg beaglebone_dev_cfg[] = {
 	{i2c2_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 #endif
 	//{mmc0_no_cd_init,DEV_ON_BASEBOARD, PROFILE_NONE},
-	//{mmc0_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
-	{mmc0_no_cd_init,DEV_ON_BASEBOARD, PROFILE_NONE},
+	{mmc0_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
+	//{mmc0_no_cd_init,DEV_ON_BASEBOARD, PROFILE_NONE},
 	{lcdc_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{evm_nand_init, DEV_ON_BASEBOARD, PROFILE_NONE},
 	{mii1_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
@@ -2104,10 +2256,12 @@ static struct evm_dev_cfg beaglebone_dev_cfg[] = {
 	{tsc_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{uart1_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{uart2_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
-	{uart3_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
+	//{uart3_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{uart4_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{uart5_init,	DEV_ON_BASEBOARD, PROFILE_NONE},
 	{krk_gpio_init,DEV_ON_BASEBOARD, PROFILE_NONE},
+	{rotary_encoder_init,DEV_ON_BASEBOARD, PROFILE_NONE},
+	{jtag_pin_init,DEV_ON_BASEBOARD, PROFILE_NONE},
 //	{enable_ecap,DEV_ON_BASEBOARD, PROFILE_NONE},
 	{NULL, 0, 0},
 };

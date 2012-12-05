@@ -68,6 +68,10 @@ static void paranoid_vtbl_check(const struct ubi_device *ubi);
 #define paranoid_vtbl_check(ubi)
 #endif
 
+
+#define LSD_DEBUG_UBI
+
+
 /* Empty volume table record */
 static struct ubi_vtbl_record empty_vtbl_record;
 
@@ -182,6 +186,10 @@ static int vtbl_check(const struct ubi_device *ubi,
 	uint32_t crc;
 	const char *name;
 
+
+			#ifdef LSD_DEBUG_UBI
+	printk(" AAA Lierda Eter in <%s,%s,%d>.ubi good peb count=%d\n",__FUNCTION__,__FILE__,__LINE__,ubi->good_peb_count);    //wuming 20120627
+#endif
 	for (i = 0; i < ubi->vtbl_slots; i++) {
 		cond_resched();
 
@@ -192,6 +200,10 @@ static int vtbl_check(const struct ubi_device *ubi,
 		vol_type = vtbl[i].vol_type;
 		name_len = be16_to_cpu(vtbl[i].name_len);
 		name = &vtbl[i].name[0];
+			#ifdef LSD_DEBUG_UBI
+	printk(" AAA Lierda Eter in <%s,%s,%d>.reserved_pebs=%d\n",__FUNCTION__,__FILE__,__LINE__,reserved_pebs);    //wuming 20120627
+#endif
+
 
 		crc = crc32(UBI_CRC32_INIT, &vtbl[i], UBI_VTBL_RECORD_SIZE_CRC);
 		if (be32_to_cpu(vtbl[i].crc) != crc) {
@@ -205,6 +217,9 @@ static int vtbl_check(const struct ubi_device *ubi,
 			if (memcmp(&vtbl[i], &empty_vtbl_record,
 						UBI_VTBL_RECORD_SIZE)) {
 				err = 2;
+			#ifdef LSD_DEBUG_UBI
+	printk(" AAA Lierda Eter in <%s,%s,%d>.\n",__FUNCTION__,__FILE__,__LINE__);    //wuming 20120627
+#endif
 				goto bad;
 			}
 			continue;
@@ -213,6 +228,9 @@ static int vtbl_check(const struct ubi_device *ubi,
 		if (reserved_pebs < 0 || alignment < 0 || data_pad < 0 ||
 		    name_len < 0) {
 			err = 3;
+			#ifdef LSD_DEBUG_UBI
+	printk(" AAA Lierda Eter in <%s,%s,%d>.\n",__FUNCTION__,__FILE__,__LINE__);    //wuming 20120627
+#endif
 			goto bad;
 		}
 
@@ -247,6 +265,9 @@ static int vtbl_check(const struct ubi_device *ubi,
 		if (reserved_pebs > ubi->good_peb_count) {
 			dbg_err("too large reserved_pebs %d, good PEBs %d",
 				reserved_pebs, ubi->good_peb_count);
+			#ifdef LSD_DEBUG_UBI
+	printk(" AAA Lierda Eter in <%s,%s,%d>.\n",__FUNCTION__,__FILE__,__LINE__);    //wuming 20120627
+#endif
 			err = 9;
 			goto bad;
 		}

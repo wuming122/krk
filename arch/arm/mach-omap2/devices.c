@@ -1474,6 +1474,37 @@ static int __init omap_init_wdt(void)
 subsys_initcall(omap_init_wdt);
 #endif
 
+
+//wuming 20120925
+//#if defined(CONFIG_INPUT_GPIO_ROTARY_ENCODER)
+#if 0
+static int __init omap_init_rotary(void)
+{
+	int id = -1;
+	struct platform_device *pdev;
+	struct omap_hwmod *oh;
+	char *oh_name = "wd_timer2";
+	char *dev_name = "omap_wdt";
+
+	if (!cpu_class_is_omap2())
+		return 0;
+
+	oh = omap_hwmod_lookup(oh_name);
+	if (!oh) {
+		pr_err("Could not look up wd_timer%d hwmod\n", id);
+		return -EINVAL;
+	}
+
+	pdev = omap_device_build(dev_name, id, oh, NULL, 0, NULL, 0, 0);
+	WARN(IS_ERR(pdev), "Can't build omap_device for %s:%s.\n",
+				dev_name, oh->name);
+	return 0;
+}
+subsys_initcall(omap_init_rotary);
+#endif
+
+
+
 int __init omap_init_gpmc(struct gpmc_devices_info *pdata, int pdata_len)
 {
 	struct omap_hwmod *oh;

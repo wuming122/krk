@@ -1368,7 +1368,8 @@ void my_function(unsigned long data)
 	my_timer.function = my_function;
 	add_timer(&my_timer);
 
-	mmc_sd_value = gpio_get_value(0*32+20);
+	//mmc_sd_value = gpio_get_value(0*32+20);
+	mmc_sd_value = gpio_get_value(0*32+6);
 	if(mmc_sd_value == 0)
 	{
 		g_s8_mmc_sd_insert_cnt++;
@@ -1380,7 +1381,10 @@ void my_function(unsigned long data)
 		g_s8_mmc_sd_insert_cnt = 0;
 	}
 	//lsd_mmc_dbg(LSD_DBG,"mmc_sd_value=%d\n",mmc_sd_value);
-	
+	//lsd_mmc_dbg(LSD_DBG,"g_s8_mmc_sd_insert_cnt=%d\n",g_s8_mmc_sd_insert_cnt);
+	//lsd_mmc_dbg(LSD_DBG,"g_s8_mmc_sd_outsert_cnt=%d\n",g_s8_mmc_sd_outsert_cnt);
+
+
 #if 0
 	if(my_host != NULL)
 	{
@@ -1405,17 +1409,20 @@ void my_function(unsigned long data)
 	if(g_s8_mmc_sd_insert_cnt >= 2)
 	{
 		//g_u8_mmc_sd_insert_cnt = 3;
+	//	lsd_mmc_dbg(LSD_DBG,"g_s8_mmc_sd_insert_cnt=%d\n",g_s8_mmc_sd_insert_cnt);
 		g_s8_mmc_sd_insert_cnt = 0;
-		if(my_host != NULL)
-		{
+	//	if(my_host != NULL)
+	//	{
+	//	lsd_mmc_dbg(LSD_DBG,"g_s8_mmc_sd_insert_cnt=%d\n",g_s8_mmc_sd_insert_cnt);
 			if(g_u8_mmc_sd_present == 0)
 			{
 				g_s8_mmc_sd_insert_cnt = -2;
 				// µ÷¶È¼ì²â
+				lsd_mmc_dbg(LSD_DBG,"***********************g_s8_mmc_sd_insert_cnt=%d\n",g_s8_mmc_sd_insert_cnt);
 				mmc_detect_change(my_host->mmc, 1);
 				printk("in detcet\n");
 			}
-		}
+	//	}
 			
 	}
 	if(g_s8_mmc_sd_outsert_cnt >= 2)
@@ -1434,7 +1441,7 @@ void my_function(unsigned long data)
 		}	
 	}
 
-	//printk("i am alive,g_u8_mmc_sd_present=%d,mmc_sd_value=%d\n",g_u8_mmc_sd_present,mmc_sd_value);
+//	printk("i am alive,g_u8_mmc_sd_present=%d,mmc_sd_value=%d\n",g_u8_mmc_sd_present,mmc_sd_value);
 }
 
 
@@ -1442,6 +1449,7 @@ static irqreturn_t omap_hsmmc_cd_handler(int irq, void *dev_id)
 {
 	struct omap_hsmmc_host *host = (struct omap_hsmmc_host *)dev_id;
 	my_host = (struct omap_hsmmc_host *)dev_id;
+	//my_host = host;
 
 	if (host->suspended)
 	{
